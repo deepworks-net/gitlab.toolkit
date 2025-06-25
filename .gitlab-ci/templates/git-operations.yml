@@ -1,0 +1,33 @@
+# GENERATED FILE - DO NOT EDIT
+# Domain: git
+# Generated: 2025-06-25T03:15:43.152367Z
+
+.git_operation_base:
+  image: python:3.9-slim
+  stage: execute
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: '0'
+  before_script:
+  - apt-get update && apt-get install -y git
+  - git config --global user.email "$GITLAB_USER_EMAIL"
+  - git config --global user.name "$GITLAB_USER_NAME"
+  - git config --global init.defaultBranch main
+  - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  - pip install -r scripts/requirements.txt || true
+.git_operation:
+  extends: .git_operation_base
+  variables:
+    ACTION: create
+    BRANCH_NAME: ''
+    TARGET_BRANCH: ''
+    REMOTE: 'false'
+    FORCE: 'false'
+    INCLUDE_REMOTE: 'false'
+    PATTERN: ''
+  script:
+  - python scripts/git_operations.py
+  artifacts:
+    reports:
+      dotenv: operation_outputs.env
+    expire_in: 1 hour

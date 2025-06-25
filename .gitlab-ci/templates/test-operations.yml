@@ -1,0 +1,22 @@
+# GENERATED FILE - DO NOT EDIT
+# Domain: test
+# Generated: 2025-06-25T03:15:24.843651Z
+
+.test_operation_base:
+  image: python:3.9-slim
+  stage: execute
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: '0'
+  before_script:
+  - pip install -r scripts/requirements.txt || true
+.test_operation:
+  extends: .test_operation_base
+  variables:
+    MESSAGE: ''
+  script:
+  - python scripts/test_operations.py
+  artifacts:
+    reports:
+      dotenv: operation_outputs.env
+    expire_in: 1 hour

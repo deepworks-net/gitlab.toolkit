@@ -1,0 +1,71 @@
+# GENERATED FILE - DO NOT EDIT
+# Source: github.toolkit/axioms/git/commit-operations.fcm
+# Model: git.commit-operations v1.0.0
+# Generated: 2025-06-25T03:15:43.170250Z
+
+# To modify this job:
+# 1. Edit the source FCM
+# 2. Run: python .gitlab-bridge/generator.py
+# 3. Commit both FCM and generated files
+include:
+- local: .gitlab-ci/templates/git-operations.yml
+git-commit-operations-create:
+  extends: .git_operation
+  variables:
+    OPERATION: create
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "create"
+git-commit-operations-amend:
+  extends: .git_operation
+  variables:
+    OPERATION: amend
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "amend"
+git-commit-operations-list:
+  extends: .git_operation
+  variables:
+    OPERATION: list
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "list"
+git-commit-operations-get:
+  extends: .git_operation
+  variables:
+    OPERATION: get
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "get"
+git-commit-operations-cherry-pick:
+  extends: .git_operation
+  variables:
+    OPERATION: cherry-pick
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "cherry-pick"
+git-commit-operations-revert:
+  extends: .git_operation
+  variables:
+    OPERATION: revert
+    FCM_MODEL: git.commit-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "revert"

@@ -1,0 +1,61 @@
+# GENERATED FILE - DO NOT EDIT
+# Source: github.toolkit/axioms/git/tag-operations.fcm
+# Model: git.tag-operations v1.0.0
+# Generated: 2025-06-25T03:15:43.206905Z
+
+# To modify this job:
+# 1. Edit the source FCM
+# 2. Run: python .gitlab-bridge/generator.py
+# 3. Commit both FCM and generated files
+include:
+- local: .gitlab-ci/templates/git-operations.yml
+git-tag-operations-create:
+  extends: .git_operation
+  variables:
+    OPERATION: create
+    FCM_MODEL: git.tag-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "create"
+git-tag-operations-delete:
+  extends: .git_operation
+  variables:
+    OPERATION: delete
+    FCM_MODEL: git.tag-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "delete"
+git-tag-operations-list:
+  extends: .git_operation
+  variables:
+    OPERATION: list
+    FCM_MODEL: git.tag-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "list"
+git-tag-operations-push:
+  extends: .git_operation
+  variables:
+    OPERATION: push
+    FCM_MODEL: git.tag-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "push"
+git-tag-operations-check:
+  extends: .git_operation
+  variables:
+    OPERATION: check
+    FCM_MODEL: git.tag-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "check"
