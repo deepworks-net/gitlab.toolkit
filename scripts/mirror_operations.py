@@ -125,17 +125,19 @@ class RepositoryMirror:
         repo_url = os.environ.get('CI_REPOSITORY_URL', '')
         
         # Build GitHub URL with authentication
+        # GitHub expects token as password with any username (using 'git' as username)
         # If TARGET_REPO is already a full URL, use it directly
         if self.target_repo.startswith('http'):
             if self.github_token:
-                # Insert token into existing URL
-                target_url = self.target_repo.replace('https://', f'https://{self.github_token}@')
+                # Insert token as password with 'git' as username
+                target_url = self.target_repo.replace('https://', f'https://git:{self.github_token}@')
             else:
                 target_url = self.target_repo
         else:
             # Build URL from parts
             if self.github_token:
-                target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+                # Use 'git' as username and token as password
+                target_url = f"https://git:{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
             else:
                 target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
         
@@ -347,17 +349,19 @@ include:
             self._run_command(['git', 'commit', '-m', commit_msg], cwd=target_dir)
             
             # Add remote and push
+            # GitHub expects token as password with any username (using 'git' as username)
             # If TARGET_REPO is already a full URL, use it directly
             if self.target_repo.startswith('http'):
                 if self.github_token:
-                    # Insert token into existing URL
-                    target_url = self.target_repo.replace('https://', f'https://{self.github_token}@')
+                    # Insert token as password with 'git' as username
+                    target_url = self.target_repo.replace('https://', f'https://git:{self.github_token}@')
                 else:
                     target_url = self.target_repo
             else:
                 # Build URL from parts
                 if self.github_token:
-                    target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+                    # Use 'git' as username and token as password
+                    target_url = f"https://git:{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
                 else:
                     target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
             self._run_command(['git', 'remote', 'add', 'origin', target_url], cwd=target_dir)
