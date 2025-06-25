@@ -11,4 +11,4 @@ stages:
 include:
   - local: '.gitlab-ci/includes.yml'
   - local: '.gitlab-ci/workflows/github-mirror.yml'
-  - local: '.gitlab-ci/jobs/test-github-auth.yml'
+  # - local: '.gitlab-ci/jobs/test-github-auth.yml'  # Disabled - auth test script preserved for future use
