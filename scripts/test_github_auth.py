@@ -185,9 +185,9 @@ def test_mirror_push():
             
         # Try push with --dry-run first
         print("   🧪 Testing push (dry run)...")
-        # Try with explicit URL in push command
+        # Push to the remote name, not the URL
         result = subprocess.run(
-            ['git', 'push', github_url, '--mirror', '--dry-run'],
+            ['git', 'push', 'github', '--mirror', '--dry-run'],
             cwd='test-mirror',
             capture_output=True,
             text=True
