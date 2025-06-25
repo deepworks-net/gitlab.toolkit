@@ -173,10 +173,21 @@ def test_mirror_push():
             print(f"   Error: {result.stderr}")
             return False
             
+        # Debug: Check what URL git actually has
+        print("   🔍 Checking remote URL...")
+        result = subprocess.run(
+            ['git', 'remote', '-v'],
+            cwd='test-mirror',
+            capture_output=True,
+            text=True
+        )
+        print(f"   Remotes: {result.stdout.replace(github_token, '[MASKED]')}")
+            
         # Try push with --dry-run first
         print("   🧪 Testing push (dry run)...")
+        # Try with explicit URL in push command
         result = subprocess.run(
-            ['git', 'push', 'github', '--mirror', '--dry-run'],
+            ['git', 'push', github_url, '--mirror', '--dry-run'],
             cwd='test-mirror',
             capture_output=True,
             text=True
