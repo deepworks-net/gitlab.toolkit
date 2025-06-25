@@ -123,8 +123,8 @@ class RepositoryMirror:
         
         # Build GitHub URL with authentication
         if self.github_token:
-            # Use the token as username with token as password (GitHub standard)
-            target_url = f"https://{self.github_token}:x-oauth-basic@github.com/{self.github_org}/{self.target_repo}.git"
+            # Use token as username with empty password (modern GitHub format)
+            target_url = f"https://{self.github_token}:@github.com/{self.github_org}/{self.target_repo}.git"
         else:
             target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
         
@@ -302,7 +302,7 @@ include:
             
             # Add remote and push
             if self.github_token:
-                target_url = f"https://{self.github_token}:x-oauth-basic@github.com/{self.github_org}/{self.target_repo}.git"
+                target_url = f"https://{self.github_token}:@github.com/{self.github_org}/{self.target_repo}.git"
             else:
                 target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
             self._run_command(['git', 'remote', 'add', 'origin', target_url], cwd=target_dir)
