@@ -81,6 +81,9 @@ class RepositoryMirror:
         self._run_command(['git', 'config', '--global', 'user.email', email])
         self._run_command(['git', 'config', '--global', 'user.name', name])
         
+        # Disable credential helpers that might interfere with token auth
+        self._run_command(['git', 'config', '--global', 'credential.helper', ''])
+        
         print("✅ Git configuration complete")
     
     def create_github_repo_if_needed(self, repo_name: str) -> bool:
