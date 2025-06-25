@@ -5,7 +5,7 @@ variables:
   # GitHub configuration
   GITHUB_ORG: "deepworks-net"
   GITHUB_REPO_NAME: "gitlab.toolkit"
-  GITHUB_URL: "https://github.com/${GITHUB_ORG}/${GITHUB_REPO_NAME}.git"
+  GITHUB_URL: "https://${GITHUB_TOKEN}@github.com/${GITHUB_ORG}/${GITHUB_REPO_NAME}.git"
   
   # Mirroring strategy
   MIRROR_STRATEGY: "source-only"  # full-mirror, source-only, artifacts-only, selective
