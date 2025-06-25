@@ -1,0 +1,10 @@
+services:
+  claude-code:
+    image: deepworks/claude-code:v0.4.0
+    volumes:
+      # Main repository mount
+      - .:/home/coder/project:rw
+    working_dir: /home/coder/project
+    tty: true
+    stdin_open: true
+    command: tail -f /dev/null
