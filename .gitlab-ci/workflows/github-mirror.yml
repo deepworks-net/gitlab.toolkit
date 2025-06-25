@@ -79,10 +79,7 @@ mirror-source-to-github:
       echo "✅ Source mirror completed"
       echo "🔗 Repository available at: https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "source-only"'
-    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "full-mirror"'
-    - when: manual
-      allow_failure: false
+    - when: never  # DISABLED - Use the Python mirror script instead
 
 # Artifacts-only mirror (compiled/generated content)
 mirror-artifacts-to-github:
