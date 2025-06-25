@@ -1,29 +1,21 @@
-# gitlab.toolkit Repository Changelog
-*Note: the changes in this log track the development of GitLab CI/CD toolkit mirroring github.toolkit functionality*
+# Changelog
 
-## **Initial Release - v0.1.0**
-### What's Implemented
-- **FCM Bridge System**: Created `.gitlab-bridge/generator.py` to transform FCMs into GitLab CI/CD templates
-- **Shell Runner Support**: Full compatibility with GitLab shell runners
-- **File Operations**: Complete implementation with runtime script and comprehensive test suite (14 tests)
-- **Git Operations**: Generated GitLab CI templates for branch, tag, and commit operations
-- **Robust Dependency Management**: Graceful fallback handling for missing pip/pip3
-- **Same FCM Sources**: Uses github.toolkit FCMs as single source of truth via git submodule
-- **Architecture**: Implements Layer 1 (Axioms) of six-layer FCM architecture
+All notable changes to the GitLab Toolkit will be documented in this file.
 
-### Bridge System Features
-- Automatic template generation from FCM definitions
-- GitLab-specific adaptations (shell runners, job templates, artifacts)
-- Metadata tracking with `.bridge-sync` files
-- Master include file for easy integration
+## [Unreleased]
 
-### Tested Components
-- File operations: create, read, update, delete, copy, move, search
-- Shell runner compatibility verified with GitLab Runner 18.1.0
-- Python dependency installation with fallbacks
-- GitLab CI/CD pipeline syntax validation
+### Added
+- FCM-based version calculator for GitLab CI
+- GitHub repository mirroring functionality
+- GitLab bridge generator for FCM to GitLab CI transformation
 
-### Next Steps
-- Implement remaining five FCM architecture layers
-- Add composite operations and workflows
-- Extend to more atomic operations from github.toolkit
+### Fixed
+- GitHub authentication issues with fine-grained vs classic tokens
+- Protected variable access for non-main branches
+
+## [0.1.0] - 2025-06-25
+
+### Added
+- Initial GitLab Toolkit structure
+- Mirror operations for GitHub synchronization
+- FCM bridge architecture implementation
