@@ -26,7 +26,9 @@ mirror-source-to-github:
   variables:
     MIRROR_STRATEGY: "source-only"
   before_script:
-    - apk add --no-cache openssh-client gh curl
+    - apk add --no-cache openssh-client curl
+    - wget -O- https://github.com/cli/cli/releases/download/v2.40.1/gh_2.40.1_linux_amd64.tar.gz | tar -xz
+    - mv gh_2.40.1_linux_amd64/bin/gh /usr/local/bin/
     - eval $(ssh-agent -s)
     - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
