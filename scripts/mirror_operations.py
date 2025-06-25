@@ -21,7 +21,7 @@ class RepositoryMirror:
         self.target_platform = os.environ.get('TARGET_PLATFORM', 'github')
         self.target_repo = os.environ.get('TARGET_REPO', '')
         self.github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
-        self.github_token = os.environ.get('GITHUB_TOKEN', '')
+        self.github_token = os.environ.get('GITLAB_ACCESS', '') or os.environ.get('GITHUB_TOKEN', '')
         self.source_ref = os.environ.get('SOURCE_REF', 'main')
         self.force_push = os.environ.get('FORCE_PUSH', 'false').lower() == 'true'
         

@@ -11,7 +11,7 @@ def test_github_auth():
     """Test GitHub authentication with minimal operations"""
     
     # Get environment variables
-    github_token = os.environ.get('GITHUB_TOKEN', '')
+    github_token = os.environ.get('GITLAB_ACCESS', '') or os.environ.get('GITHUB_TOKEN', '')
     github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
     target_repo = os.environ.get('TARGET_REPO', 'gitlab.toolkit')
     
@@ -78,7 +78,7 @@ def test_git_clone():
     """Test actual git clone with the working authentication"""
     print("\n=== Testing Git Clone ===")
     
-    github_token = os.environ.get('GITHUB_TOKEN', '')
+    github_token = os.environ.get('GITLAB_ACCESS', '') or os.environ.get('GITHUB_TOKEN', '')
     github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
     target_repo = os.environ.get('TARGET_REPO', 'gitlab.toolkit')
     
@@ -125,7 +125,7 @@ def test_mirror_push():
     """Test mirror clone and push like the actual mirror script"""
     print("\n=== Testing Mirror Push ===")
     
-    github_token = os.environ.get('GITHUB_TOKEN', '')
+    github_token = os.environ.get('GITLAB_ACCESS', '') or os.environ.get('GITHUB_TOKEN', '')
     github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
     target_repo = os.environ.get('TARGET_REPO', 'gitlab.toolkit')
     repo_url = os.environ.get('CI_REPOSITORY_URL', '')
