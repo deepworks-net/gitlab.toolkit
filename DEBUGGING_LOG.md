@@ -75,6 +75,19 @@ The mirror script expects `TARGET_REPO` but it's not defined in the GitLab CI en
 Set `TARGET_REPO` in the GitLab CI template that defines mirror operations
 
 ### Changes Made:
-- `.gitlab-ci/templates/mirror-operations.yml:38`: Set `TARGET_REPO: 'https://github.com/deepworks-net/gitlab.toolkit.git'`
+- `.gitlab-ci/templates/mirror-operations.yml:38`: Set `TARGET_REPO: 'gitlab.toolkit'` (repository name, not full URL)
 
 ### Status: RESOLVED ✅
+
+### Issue #3b: TARGET_REPO as Full URL Caused Token Mangling
+**Date**: 2025-06-25
+**Status**: RESOLVED ✅
+
+### Problem:
+Using full URL as TARGET_REPO caused the script to mangle the authentication token when building the target URL
+
+### Root Cause:
+Script logic expects TARGET_REPO to be just the repository name, not a full URL. When it's a URL, the token insertion logic breaks.
+
+### Solution:
+Reverted TARGET_REPO to empty string to use GitLab CI/CD variable set in repository settings
