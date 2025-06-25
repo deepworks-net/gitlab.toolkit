@@ -2,7 +2,7 @@
   "source_fcm": "axioms/system/file-operations.fcm",
   "model": "system.file-operations",
   "version": "1.0.0",
-  "generated_at": "2025-06-25T03:59:10.562602Z",
+  "generated_at": "2025-06-25T04:14:37.717338Z",
   "generator_version": "gitlab-bridge-1.0.0",
   "checksum": "8449ee8f3f92c5d7447216d3932ae930fa5fe135c213e974e326d47ad0b97021"
 }

@@ -1,6 +1,11 @@
 # GitLab Toolkit CI/CD Configuration
 # Generated from same FCMs as github.toolkit
 
+stages:
+  - build
+  - test
+  - deploy
+
 # Include all generated FCM-based templates and jobs
 include:
   - local: '.gitlab-ci/includes.yml'

@@ -2,7 +2,7 @@
   "source_fcm": "github.toolkit/axioms/git/branch-operations.fcm",
   "model": "git.branch-operations",
   "version": "1.0.0",
-  "generated_at": "2025-06-25T03:59:10.484025Z",
+  "generated_at": "2025-06-25T04:14:37.633926Z",
   "generator_version": "gitlab-bridge-1.0.0",
   "checksum": "97af7b6124d0ed7a87e8e6e87c4c61698aa9c35a5220c5c5a8604e13ab7b25e8"
 }

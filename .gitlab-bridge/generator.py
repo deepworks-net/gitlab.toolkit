@@ -282,7 +282,7 @@ class GitLabBridgeGenerator:
             # Base template for operations
             f'.{domain}_operation_base': {
                 'image': fcm_data['interface'].get('image', 'python:3.9-slim'),
-                'stage': 'execute',
+                'stage': 'build',  # Use standard GitLab stage
                 'variables': {
                     'GIT_STRATEGY': 'clone',
                     'GIT_DEPTH': '0'

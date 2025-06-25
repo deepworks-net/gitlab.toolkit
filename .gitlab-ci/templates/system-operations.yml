@@ -1,10 +1,10 @@
 # GENERATED FILE - DO NOT EDIT
 # Domain: system
-# Generated: 2025-06-25T03:59:10.621121Z
+# Generated: 2025-06-25T04:14:37.736082Z
 
 .system_operation_base:
   image: python:3.9-slim
-  stage: execute
+  stage: build
   variables:
     GIT_STRATEGY: clone
     GIT_DEPTH: '0'
