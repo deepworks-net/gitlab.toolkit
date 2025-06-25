@@ -58,12 +58,20 @@ class RepositoryMirror:
         """Run a shell command"""
         print(f"Running: {' '.join(cmd)}")
         
-        if capture:
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, check=True)
-            return result.stdout.strip()
-        else:
-            subprocess.run(cmd, check=True, cwd=cwd)
-            return ""
+        try:
+            if capture:
+                result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, check=True)
+                return result.stdout.strip()
+            else:
+                subprocess.run(cmd, check=True, cwd=cwd)
+                return ""
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Command failed with exit code {e.returncode}")
+            if hasattr(e, 'stderr') and e.stderr:
+                print(f"❌ Error output: {e.stderr}")
+            if hasattr(e, 'stdout') and e.stdout:
+                print(f"📄 Standard output: {e.stdout}")
+            raise
     
     def setup_git_config(self):
         """Configure git for mirroring operations"""
@@ -127,7 +135,10 @@ class RepositoryMirror:
         
         # Add GitHub remote and push
         self._run_command(['git', 'remote', 'add', 'github', target_url], cwd='repo-mirror')
-        self._run_command(['git', 'push', 'github', '--mirror'], cwd='repo-mirror')
+        
+        print("🔄 Pushing full mirror to existing GitHub repository...")
+        # Use --force to overwrite any existing content in the GitHub repo
+        self._run_command(['git', 'push', 'github', '--mirror', '--force'], cwd='repo-mirror')
         
         self.outputs['mirror_status'] = 'success'
         self.outputs['target_url'] = f"https://github.com/{self.github_org}/{self.target_repo}"
