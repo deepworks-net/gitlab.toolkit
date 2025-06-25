@@ -143,5 +143,27 @@ Added extensive debug logging to `scripts/mirror_operations.py:391-403` to print
 - All CI_ prefixed variables
 - This will help identify what's different between main and staging branch runs
 
-### Next Steps:
-Run staging branch and compare debug output with main branch to identify the difference
+### Debug Results:
+Staging branch shows ALL required variables are missing:
+- `TARGET_REPO`: `` (empty)
+- `GITHUB_ORG`: `` (empty) 
+- `GITLAB_ACCESS`: `NOT_SET`
+- `GITHUB_TOKEN`: `NOT_SET`
+
+### Root Cause:
+GitLab CI/CD variables are not being passed to the job environment on staging branch.
+
+### Possible Causes:
+1. **Variables are "Protected"** - Only available to protected branches, and staging is not protected
+2. **Variable scope restrictions** - Variables limited to specific branches/tags
+3. **Variables don't exist** - Not actually configured in GitLab repository settings
+
+### Root Cause CONFIRMED:
+Variables are marked as "Protected" in GitLab CI/CD settings
+
+### Solution:
+Uncheck "Protected" flag for variables: `TARGET_REPO`, `GITHUB_ORG`, `GITLAB_ACCESS`
+- This allows them to be available to all branches, not just protected ones
+- Keep "Masked" checked for security on sensitive variables like `GITLAB_ACCESS`
+
+### Status: RESOLVED ✅
