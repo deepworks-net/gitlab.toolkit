@@ -5,7 +5,7 @@ variables:
   # GitHub configuration
   GITHUB_ORG: "deepworks-net"
   GITHUB_REPO_NAME: "gitlab.toolkit"
-  GITHUB_URL: "https://git:${GITHUB_TOKEN}@github.com/${GITHUB_ORG}/${GITHUB_REPO_NAME}.git"
+  GITHUB_URL: "https://${GITHUB_TOKEN}@github.com/${GITHUB_ORG}/${GITHUB_REPO_NAME}.git"
   
   # Mirroring strategy
   MIRROR_STRATEGY: "source-only"  # full-mirror, source-only, artifacts-only, selective
@@ -26,9 +26,7 @@ mirror-source-to-github:
   variables:
     MIRROR_STRATEGY: "source-only"
   before_script:
-    - apk add --no-cache openssh-client curl
-    - wget -O- https://github.com/cli/cli/releases/download/v2.40.1/gh_2.40.1_linux_amd64.tar.gz | tar -xz
-    - mv gh_2.40.1_linux_amd64/bin/gh /usr/local/bin/
+    - apk add --no-cache openssh-client github-cli curl
     - eval $(ssh-agent -s)
     - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
