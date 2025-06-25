@@ -317,9 +317,20 @@ class GitLabBridgeGenerator:
                 'git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"'
             )
         
-        # Install Python dependencies (use pip3 for shell runner)
+        # Install Python dependencies (with fallbacks for shell runner)
         before_script.extend([
-            '[ -f scripts/requirements.txt ] && pip3 install --user -r scripts/requirements.txt || echo "No requirements.txt or pip3 install failed"',
+            '# Install Python dependencies if needed',
+            'if [ -f scripts/requirements.txt ]; then',
+            '  if command -v pip3 >/dev/null 2>&1; then',
+            '    pip3 install --user -r scripts/requirements.txt || echo "pip3 install failed, continuing anyway"',
+            '  elif command -v pip >/dev/null 2>&1; then', 
+            '    pip install --user -r scripts/requirements.txt || echo "pip install failed, continuing anyway"',
+            '  else',
+            '    echo "No pip/pip3 found - assuming dependencies are pre-installed"',
+            '  fi',
+            'else',
+            '  echo "No requirements.txt found"',
+            'fi',
             'export PATH="$HOME/.local/bin:$PATH"'  # Add user pip binaries to PATH
         ])
         

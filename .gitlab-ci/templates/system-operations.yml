@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT
 # Domain: system
-# Generated: 2025-06-25T04:24:30.437368Z
+# Generated: 2025-06-25T04:29:23.923736Z
 
 .system_operation_base:
   stage: build
@@ -11,8 +11,20 @@
     GIT_DEPTH: '0'
   before_script:
   - which python3 || (echo "Python3 not found"; exit 1)
-  - '[ -f scripts/requirements.txt ] && pip3 install --user -r scripts/requirements.txt
-    || echo "No requirements.txt or pip3 install failed"'
+  - '# Install Python dependencies if needed'
+  - if [ -f scripts/requirements.txt ]; then
+  - '  if command -v pip3 >/dev/null 2>&1; then'
+  - '    pip3 install --user -r scripts/requirements.txt || echo "pip3 install failed,
+    continuing anyway"'
+  - '  elif command -v pip >/dev/null 2>&1; then'
+  - '    pip install --user -r scripts/requirements.txt || echo "pip install failed,
+    continuing anyway"'
+  - '  else'
+  - '    echo "No pip/pip3 found - assuming dependencies are pre-installed"'
+  - '  fi'
+  - else
+  - '  echo "No requirements.txt found"'
+  - fi
   - export PATH="$HOME/.local/bin:$PATH"
 .system_operation:
   extends: .system_operation_base
