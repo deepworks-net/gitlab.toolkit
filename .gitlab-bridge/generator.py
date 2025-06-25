@@ -354,9 +354,19 @@ class GitLabBridgeGenerator:
                 operation_template['variables'][var_name] = ''
         
         # Add script (use python3 explicitly for shell runner)
-        operation_template['script'] = [
-            f'python3 scripts/{domain}_operations.py'
-        ]
+        # Use specific script based on model name or fallback to domain
+        model_parts = fcm_data['model'].split('.')
+        if len(model_parts) > 1:
+            capability = model_parts[1].replace('-', '_')
+            script_name = f'{capability}.py'
+            # Check if specific script exists, otherwise use domain default
+            script_path = f'scripts/{script_name}'
+            if Path(script_path).exists():
+                operation_template['script'] = [f'python3 scripts/{script_name}']
+            else:
+                operation_template['script'] = [f'python3 scripts/{domain}_operations.py']
+        else:
+            operation_template['script'] = [f'python3 scripts/{domain}_operations.py']
         
         # Add artifacts for outputs
         if fcm_data['outputs']:

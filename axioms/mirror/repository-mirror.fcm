@@ -1,8 +1,8 @@
 # Repository Mirror Axiom - Formal Conceptual Model
-Model: system.repository-mirror
+Model: mirror.repository-mirror
 Version: 1.0.0
 Layer: Axiom
-Domain: system
+Domain: mirror
 
 Capability: Mirror repositories between platforms with selective content strategies
 

@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT
-# Domain: git
-# Generated: 2025-06-25T04:54:34.491651Z
+# Domain: mirror
+# Generated: 2025-06-25T04:58:55.398783Z
 
-.git_operation_base:
+.mirror_operation_base:
   stage: build
   tags:
   - shell
@@ -12,12 +12,7 @@
   before_script:
   - which python3 || (echo "Python3 not found"; exit 1)
   - which git || (echo "git not found, please install it"; exit 1)
-  - git config --global user.email "$GITLAB_USER_EMAIL" || git config --global user.email
-    "gitlab-ci@example.com"
-  - git config --global user.name "$GITLAB_USER_NAME" || git config --global user.name
-    "GitLab CI"
-  - git config --global init.defaultBranch main
-  - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  - which github-cli || (echo "github-cli not found, please install it"; exit 1)
   - '# Install Python dependencies if needed'
   - if [ -f scripts/requirements.txt ]; then
   - '  if command -v pip3 >/dev/null 2>&1; then'
@@ -33,18 +28,20 @@
   - '  echo "No requirements.txt found"'
   - fi
   - export PATH="$HOME/.local/bin:$PATH"
-.git_operation:
-  extends: .git_operation_base
+.mirror_operation:
+  extends: .mirror_operation_base
   variables:
-    ACTION: create
-    BRANCH_NAME: ''
-    TARGET_BRANCH: ''
-    REMOTE: 'false'
-    FORCE: 'false'
-    INCLUDE_REMOTE: 'false'
-    PATTERN: ''
+    STRATEGY: full-mirror
+    TARGET_PLATFORM: github
+    SOURCE_REF: ''
+    TARGET_REPO: ''
+    INCLUDE_PATTERNS: ''
+    EXCLUDE_PATTERNS: ''
+    FORCE_PUSH: 'false'
+    CREATE_RELEASE: 'false'
+    MIRROR_BRANCHES: ''
   script:
-  - python3 scripts/git_operations.py
+  - python3 scripts/mirror_operations.py
   artifacts:
     reports:
       dotenv: operation_outputs.env
