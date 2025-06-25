@@ -19,7 +19,7 @@ class RepositoryMirror:
     def __init__(self):
         self.strategy = os.environ.get('STRATEGY', 'source-only')
         self.target_platform = os.environ.get('TARGET_PLATFORM', 'github')
-        self.target_repo = os.environ.get('TARGET_REPO', '')
+        self.target_repo = self._extract_repo_name(os.environ.get('TARGET_REPO', ''))
         self.github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
         self.github_token = os.environ.get('GITHUB_TOKEN', '')
         self.source_ref = os.environ.get('SOURCE_REF', 'main')
@@ -27,6 +27,24 @@ class RepositoryMirror:
         
         self.outputs = {}
         self.config = self._load_config()
+    
+    def _extract_repo_name(self, target_repo: str) -> str:
+        """Extract repository name from URL or return as-is if already a name"""
+        if not target_repo:
+            return ''
+        
+        # If it's a URL, extract the repository name
+        if target_repo.startswith('http'):
+            # Remove .git suffix if present
+            repo_name = target_repo.rstrip('/')
+            if repo_name.endswith('.git'):
+                repo_name = repo_name[:-4]
+            # Extract just the repository name (last part of path)
+            repo_name = repo_name.split('/')[-1]
+            return repo_name
+        
+        # If it's already just a name, return as-is
+        return target_repo
     
     def _load_config(self) -> Dict:
         """Load mirror configuration"""
@@ -94,7 +112,15 @@ class RepositoryMirror:
         print("🔄 Starting full repository mirror...")
         
         repo_url = os.environ.get('CI_REPOSITORY_URL', '')
-        target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
+        
+        # Build GitHub URL with authentication
+        if self.github_token:
+            target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+        else:
+            target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
+        
+        print(f"Source: {repo_url}")
+        print(f"Target: https://github.com/{self.github_org}/{self.target_repo}.git")
         
         # Clone as mirror
         self._run_command(['git', 'clone', '--mirror', repo_url, 'repo-mirror'])
@@ -263,7 +289,10 @@ include:
             self._run_command(['git', 'commit', '-m', commit_msg], cwd=target_dir)
             
             # Add remote and push
-            target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
+            if self.github_token:
+                target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+            else:
+                target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
             self._run_command(['git', 'remote', 'add', 'origin', target_url], cwd=target_dir)
             self._run_command(['git', 'branch', '-M', 'main'], cwd=target_dir)
             
