@@ -1,4 +1,36 @@
 
+# Python
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
 
+# GitLab CI/CD
+.gitlab-ci-local/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+operation_outputs.env
+
+# Claude
 .claude/
+claude/
