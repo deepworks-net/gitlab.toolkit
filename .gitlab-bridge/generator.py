@@ -279,10 +279,10 @@ class GitLabBridgeGenerator:
             f'# Generated: {datetime.utcnow().isoformat()}Z': None,
             '': None,
             
-            # Base template for operations
+            # Base template for operations (shell runner)
             f'.{domain}_operation_base': {
-                'image': fcm_data['interface'].get('image', 'python:3.9-slim'),
                 'stage': 'build',  # Use standard GitLab stage
+                'tags': ['shell'],  # Use shell runner
                 'variables': {
                     'GIT_STRATEGY': 'clone',
                     'GIT_DEPTH': '0'
@@ -290,19 +290,25 @@ class GitLabBridgeGenerator:
             }
         }
         
-        # Add before_script for dependencies
+        # Add before_script for shell runner dependencies
         before_script = []
         
-        # Install system requirements
+        # Check for Python availability
+        before_script.append('which python3 || (echo "Python3 not found"; exit 1)')
+        
+        # Install system requirements (assumes sudo access or pre-installed)
         requirements = fcm_data['interface'].get('requirements', [])
-        if requirements:
-            before_script.append('apt-get update && apt-get install -y ' + ' '.join(requirements))
+        if requirements and len(requirements) > 0:
+            # Check if requirements are available
+            for req in requirements:
+                if req.strip():  # Only add non-empty requirements
+                    before_script.append(f'which {req} || (echo "{req} not found, please install it"; exit 1)')
         
         # Git configuration
         if domain == 'git':
             before_script.extend([
-                'git config --global user.email "$GITLAB_USER_EMAIL"',
-                'git config --global user.name "$GITLAB_USER_NAME"',
+                'git config --global user.email "$GITLAB_USER_EMAIL" || git config --global user.email "gitlab-ci@example.com"',
+                'git config --global user.name "$GITLAB_USER_NAME" || git config --global user.name "GitLab CI"',
                 'git config --global init.defaultBranch main'
             ])
             
@@ -311,8 +317,11 @@ class GitLabBridgeGenerator:
                 'git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"'
             )
         
-        # Install Python dependencies
-        before_script.append('pip install -r scripts/requirements.txt || true')
+        # Install Python dependencies (use pip3 for shell runner)
+        before_script.extend([
+            '[ -f scripts/requirements.txt ] && pip3 install --user -r scripts/requirements.txt || echo "No requirements.txt or pip3 install failed"',
+            'export PATH="$HOME/.local/bin:$PATH"'  # Add user pip binaries to PATH
+        ])
         
         if before_script:
             template[f'.{domain}_operation_base']['before_script'] = before_script
@@ -333,9 +342,9 @@ class GitLabBridgeGenerator:
             else:
                 operation_template['variables'][var_name] = ''
         
-        # Add script
+        # Add script (use python3 explicitly for shell runner)
         operation_template['script'] = [
-            f'python scripts/{domain}_operations.py'
+            f'python3 scripts/{domain}_operations.py'
         ]
         
         # Add artifacts for outputs

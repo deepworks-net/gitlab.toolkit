@@ -1,20 +1,26 @@
 # GENERATED FILE - DO NOT EDIT
 # Domain: git
-# Generated: 2025-06-25T04:14:37.646735Z
+# Generated: 2025-06-25T04:23:37.139659Z
 
 .git_operation_base:
-  image: python:3.9-slim
   stage: build
+  tags:
+  - shell
   variables:
     GIT_STRATEGY: clone
     GIT_DEPTH: '0'
   before_script:
-  - apt-get update && apt-get install -y git
-  - git config --global user.email "$GITLAB_USER_EMAIL"
-  - git config --global user.name "$GITLAB_USER_NAME"
+  - which python3 || (echo "Python3 not found"; exit 1)
+  - which git || (echo "git not found, please install it"; exit 1)
+  - git config --global user.email "$GITLAB_USER_EMAIL" || git config --global user.email
+    "gitlab-ci@example.com"
+  - git config --global user.name "$GITLAB_USER_NAME" || git config --global user.name
+    "GitLab CI"
   - git config --global init.defaultBranch main
   - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-  - pip install -r scripts/requirements.txt || true
+  - '[ -f scripts/requirements.txt ] && pip3 install --user -r scripts/requirements.txt
+    || echo "No requirements.txt or pip3 install failed"'
+  - export PATH="$HOME/.local/bin:$PATH"
 .git_operation:
   extends: .git_operation_base
   variables:
@@ -26,7 +32,7 @@
     INCLUDE_REMOTE: 'false'
     PATTERN: ''
   script:
-  - python scripts/git_operations.py
+  - python3 scripts/git_operations.py
   artifacts:
     reports:
       dotenv: operation_outputs.env

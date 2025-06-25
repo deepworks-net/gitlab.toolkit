@@ -1,16 +1,19 @@
 # GENERATED FILE - DO NOT EDIT
 # Domain: system
-# Generated: 2025-06-25T04:14:37.736082Z
+# Generated: 2025-06-25T04:24:30.437368Z
 
 .system_operation_base:
-  image: python:3.9-slim
   stage: build
+  tags:
+  - shell
   variables:
     GIT_STRATEGY: clone
     GIT_DEPTH: '0'
   before_script:
-  - 'apt-get update && apt-get install -y '
-  - pip install -r scripts/requirements.txt || true
+  - which python3 || (echo "Python3 not found"; exit 1)
+  - '[ -f scripts/requirements.txt ] && pip3 install --user -r scripts/requirements.txt
+    || echo "No requirements.txt or pip3 install failed"'
+  - export PATH="$HOME/.local/bin:$PATH"
 .system_operation:
   extends: .system_operation_base
   variables:
@@ -23,7 +26,7 @@
     CREATE_DIRS: 'false'
     OVERWRITE: 'false'
   script:
-  - python scripts/system_operations.py
+  - python3 scripts/system_operations.py
   artifacts:
     reports:
       dotenv: operation_outputs.env
