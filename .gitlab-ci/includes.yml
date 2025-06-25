@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT
 # Master include file for all GitLab CI templates
-# Generated: 2025-06-25T04:29:23.932571Z
+# Generated: 2025-06-25T04:46:52.774900Z
 
 include:
 - local: .gitlab-ci/templates/git-operations.yml
@@ -10,4 +10,5 @@ include:
 - local: .gitlab-ci/jobs/commit-operations.yml
 - local: .gitlab-ci/jobs/file-operations.yml
 - local: .gitlab-ci/jobs/minimal.yml
+- local: .gitlab-ci/jobs/repository-mirror.yml
 - local: .gitlab-ci/jobs/tag-operations.yml

@@ -5,7 +5,9 @@ stages:
   - build
   - test
   - deploy
+  - mirror
 
 # Include all generated FCM-based templates and jobs
 include:
   - local: '.gitlab-ci/includes.yml'
+  - local: '.gitlab-ci/workflows/github-mirror.yml'

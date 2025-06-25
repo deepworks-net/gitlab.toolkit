@@ -1,0 +1,91 @@
+# Mirror Configuration
+# Defines different mirroring strategies for various projects
+
+# Default configuration
+default:
+  github_org: "deepworks-net"
+  mirror_branches: "main"
+  force_push: false
+  create_releases: true
+
+# Strategy definitions
+strategies:
+  # Full mirror - everything goes to GitHub
+  full-mirror:
+    description: "Complete repository mirror including all files and history"
+    include_patterns: "*"
+    exclude_patterns: ".env,.secrets/"
+    target_repo_suffix: ""
+    
+  # Source only - code and documentation, no compiled artifacts
+  source-only:
+    description: "Source code, documentation, and configuration files only"
+    include_patterns: 
+      - "*.md"
+      - "*.yml" 
+      - "*.yaml"
+      - "*.py"
+      - "*.fcm"
+      - "LICENSE"
+      - "scripts/"
+      - "axioms/"
+      - "actions/"
+      - ".gitlab-bridge/"
+    exclude_patterns:
+      - ".gitlab-ci/jobs/"
+      - ".gitlab-ci/templates/"
+      - ".venv/"
+      - "__pycache__/"
+      - "*.pyc"
+      - ".env"
+    target_repo_suffix: ""
+    
+  # Artifacts only - generated content and documentation
+  artifacts-only:
+    description: "Generated CI/CD templates and documentation only"
+    include_patterns:
+      - "README.md"
+      - "LICENSE" 
+      - "CHANGELOG.md"
+      - ".gitlab-ci/"
+      - "docs/"
+    exclude_patterns:
+      - ".gitlab-ci/config/"
+      - ".gitlab-ci/workflows/"
+    target_repo_suffix: "-artifacts"
+    custom_readme: true
+    
+  # Selective - configurable patterns for specific use cases
+  selective:
+    description: "Custom selection based on project-specific requirements"
+    include_patterns: []  # Define per project
+    exclude_patterns: []  # Define per project
+    target_repo_suffix: "-public"
+    
+# Project-specific configurations
+projects:
+  gitlab.toolkit:
+    default_strategy: "source-only"
+    github_repo: "gitlab.toolkit"
+    public: true
+    
+  # Example for other projects
+  internal-tools:
+    default_strategy: "artifacts-only"
+    github_repo: "public-tools"
+    public: true
+    
+  proprietary-project:
+    default_strategy: "selective"
+    github_repo: "public-components"
+    public: false
+    selective_config:
+      include_patterns:
+        - "public/"
+        - "docs/public/"
+        - "README.md"
+        - "LICENSE"
+      exclude_patterns:
+        - "internal/"
+        - "secrets/"
+        - "config/"

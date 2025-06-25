@@ -1,0 +1,16 @@
+# GENERATED FILE - DO NOT EDIT
+# Source: axioms/system/repository-mirror.fcm
+# Model: system.repository-mirror v1.0.0
+# Generated: 2025-06-25T04:46:52.748291Z
+
+# To modify this job:
+# 1. Edit the source FCM
+# 2. Run: python .gitlab-bridge/generator.py
+# 3. Commit both FCM and generated files
+include:
+- local: .gitlab-ci/templates/system-operations.yml
+system-repository-mirror:
+  extends: .system_operation
+  variables:
+    FCM_MODEL: system.repository-mirror
+    FCM_VERSION: 1.0.0

@@ -1,0 +1,39 @@
+# Repository Mirror Axiom - Formal Conceptual Model
+Model: system.repository-mirror
+Version: 1.0.0
+Layer: Axiom
+Domain: system
+
+Capability: Mirror repositories between platforms with selective content strategies
+
+Parameters:
+  - strategy: full-mirror|source-only|artifacts-only|selective
+  - target_platform: github|gitlab|bitbucket
+  - source_ref: string (optional)
+  - target_repo: string
+  - include_patterns: string (optional)
+  - exclude_patterns: string (optional)
+  - force_push: boolean (optional)
+  - create_release: boolean (optional)
+  - mirror_branches: string (optional)
+
+Outputs:
+  - mirror_status
+  - target_url
+  - mirrored_refs
+  - operation_result
+
+Interface:
+  type: docker
+  image: alpine/git:latest
+  requirements: [git, github-cli]
+
+Dependencies:
+  - git
+  - github-token
+  - ssh-key (optional)
+
+Patterns:
+  - repository-operation
+  - cross-platform-sync
+  - selective-mirroring

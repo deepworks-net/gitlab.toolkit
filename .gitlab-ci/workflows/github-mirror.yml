@@ -1,0 +1,266 @@
+# GitHub Mirror Workflow
+# Mirrors GitLab repository to GitHub with different strategies
+
+variables:
+  # GitHub configuration
+  GITHUB_ORG: "deepworks-net"
+  GITHUB_REPO_NAME: "gitlab.toolkit"
+  GITHUB_URL: "https://github.com/${GITHUB_ORG}/${GITHUB_REPO_NAME}.git"
+  
+  # Mirroring strategy
+  MIRROR_STRATEGY: "source-only"  # full-mirror, source-only, artifacts-only, selective
+  
+  # Branch configuration
+  MIRROR_BRANCHES: "main"
+  FORCE_PUSH: "false"
+
+stages:
+  - mirror
+
+# Full repository mirror (source code)
+mirror-source-to-github:
+  stage: mirror
+  image: alpine/git:latest
+  tags:
+    - shell
+  variables:
+    MIRROR_STRATEGY: "source-only"
+  before_script:
+    - apk add --no-cache openssh-client github-cli curl
+    - eval $(ssh-agent -s)
+    - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    # Configure git
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_NAME"
+    # Configure GitHub CLI
+    - echo "$GITHUB_TOKEN" | gh auth login --with-token
+  script:
+    - |
+      echo "🔄 Starting source mirror to GitHub..."
+      
+      # Clone the current repository
+      git clone --mirror "$CI_REPOSITORY_URL" repo-mirror
+      cd repo-mirror
+      
+      # Add GitHub as remote
+      git remote add github "$GITHUB_URL"
+      
+      # Create repository if it doesn't exist
+      if ! gh repo view "$GITHUB_ORG/$GITHUB_REPO_NAME" >/dev/null 2>&1; then
+        echo "📦 Creating GitHub repository..."
+        gh repo create "$GITHUB_ORG/$GITHUB_REPO_NAME" \
+          --description "GitLab CI/CD Toolkit - Mirror of internal GitLab repository" \
+          --public \
+          --clone=false
+      fi
+      
+      # Mirror specific branches or all
+      if [ "$MIRROR_BRANCHES" = "all" ]; then
+        echo "🌿 Mirroring all branches..."
+        git push github --mirror
+      else
+        echo "🌿 Mirroring specific branches: $MIRROR_BRANCHES"
+        for branch in $(echo $MIRROR_BRANCHES | tr ',' ' '); do
+          if git show-ref --verify --quiet refs/heads/$branch; then
+            git push github refs/heads/$branch:refs/heads/$branch
+          else
+            echo "⚠️ Branch $branch not found, skipping"
+          fi
+        done
+        
+        # Push tags
+        git push github --tags
+      fi
+      
+      echo "✅ Source mirror completed"
+      echo "🔗 Repository available at: https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "source-only"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "full-mirror"'
+    - when: manual
+      allow_failure: false
+
+# Artifacts-only mirror (compiled/generated content)
+mirror-artifacts-to-github:
+  stage: mirror
+  image: alpine/git:latest
+  tags:
+    - shell
+  variables:
+    MIRROR_STRATEGY: "artifacts-only"
+    GITHUB_REPO_NAME: "gitlab.toolkit-artifacts"
+  before_script:
+    - apk add --no-cache openssh-client github-cli python3
+    - eval $(ssh-agent -s)
+    - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - echo "$GITHUB_TOKEN" | gh auth login --with-token
+  script:
+    - |
+      echo "📦 Starting artifacts mirror to GitHub..."
+      
+      # Create a new repository for artifacts
+      mkdir artifacts-repo
+      cd artifacts-repo
+      git init
+      
+      # Create repository if it doesn't exist
+      if ! gh repo view "$GITHUB_ORG/$GITHUB_REPO_NAME" >/dev/null 2>&1; then
+        echo "📦 Creating GitHub artifacts repository..."
+        gh repo create "$GITHUB_ORG/$GITHUB_REPO_NAME" \
+          --description "GitLab Toolkit - Generated CI/CD Templates and Artifacts" \
+          --public \
+          --clone=false
+      fi
+      
+      # Copy only generated artifacts and documentation
+      cp -r ../.gitlab-ci ./
+      cp ../README.md ./
+      cp ../LICENSE ./
+      cp ../CHANGELOG.md ./
+      
+      # Create artifacts-specific README
+      cat > README.md << 'EOF'
+      # GitLab Toolkit - Generated Artifacts
+      
+      This repository contains the generated GitLab CI/CD templates and documentation from the internal GitLab Toolkit.
+      
+      ## Generated Content
+      
+      - `.gitlab-ci/` - Generated GitLab CI/CD templates from FCM definitions
+      - Documentation and usage examples
+      
+      ## Source Repository
+      
+      The source code and FCM definitions are maintained in an internal GitLab instance.
+      
+      ## Usage
+      
+      Include these templates in your GitLab CI/CD pipelines:
+      
+      ```yaml
+      include:
+        - project: 'deepworks-net/gitlab.toolkit-artifacts'
+          file: '.gitlab-ci/includes.yml'
+      ```
+      EOF
+      
+      # Commit and push artifacts
+      git add .
+      git commit -m "chore: Update generated artifacts from GitLab CI/CD
+      
+      Generated from commit: $CI_COMMIT_SHA
+      Pipeline: $CI_PIPELINE_URL"
+      
+      git remote add origin "https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME.git"
+      git branch -M main
+      git push -u origin main
+      
+      echo "✅ Artifacts mirror completed"
+      echo "🔗 Artifacts available at: https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "artifacts-only"'
+    - when: manual
+      allow_failure: false
+
+# Selective mirror with custom patterns
+mirror-selective-to-github:
+  stage: mirror
+  image: alpine/git:latest
+  tags:
+    - shell
+  variables:
+    MIRROR_STRATEGY: "selective"
+    INCLUDE_PATTERNS: "README.md,LICENSE,CHANGELOG.md,.gitlab-ci/,scripts/,actions/"
+    EXCLUDE_PATTERNS: ".venv/,__pycache__/,*.pyc,.env"
+  before_script:
+    - apk add --no-cache openssh-client github-cli rsync
+    - eval $(ssh-agent -s)
+    - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - echo "$GITHUB_TOKEN" | gh auth login --with-token
+  script:
+    - |
+      echo "🎯 Starting selective mirror to GitHub..."
+      
+      # Create selective repository
+      mkdir selective-repo
+      cd selective-repo
+      git init
+      
+      # Create repository if it doesn't exist
+      if ! gh repo view "$GITHUB_ORG/$GITHUB_REPO_NAME" >/dev/null 2>&1; then
+        echo "📦 Creating GitHub repository..."
+        gh repo create "$GITHUB_ORG/$GITHUB_REPO_NAME" \
+          --description "GitLab Toolkit - Selective Open Source Mirror" \
+          --public \
+          --clone=false
+      fi
+      
+      # Copy files based on include patterns
+      for pattern in $(echo $INCLUDE_PATTERNS | tr ',' ' '); do
+        if [ -e "../$pattern" ]; then
+          echo "📁 Including: $pattern"
+          cp -r "../$pattern" ./
+        else
+          echo "⚠️ Pattern not found: $pattern"
+        fi
+      done
+      
+      # Remove files based on exclude patterns
+      for pattern in $(echo $EXCLUDE_PATTERNS | tr ',' ' '); do
+        find . -name "$pattern" -type f -delete 2>/dev/null || true
+        find . -name "$pattern" -type d -exec rm -rf {} + 2>/dev/null || true
+      done
+      
+      # Create selective README
+      cat > README-SELECTIVE.md << 'EOF'
+      # GitLab Toolkit - Open Source Components
+      
+      This repository contains selected open source components from the GitLab CI/CD Toolkit.
+      
+      ## What's Included
+      
+      - Public CI/CD templates and examples
+      - Documentation and usage guides
+      - Open source scripts and utilities
+      
+      ## What's Not Included
+      
+      - Internal/proprietary configurations
+      - Private deployment scripts
+      - Sensitive environment configurations
+      
+      ## Full Documentation
+      
+      For complete documentation, see the main repository documentation.
+      EOF
+      
+      git add .
+      git commit -m "chore: Update selective mirror from GitLab
+      
+      Source commit: $CI_COMMIT_SHA
+      Pipeline: $CI_PIPELINE_URL"
+      
+      git remote add origin "https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME.git"
+      git branch -M main
+      git push -u origin main
+      
+      echo "✅ Selective mirror completed"
+  rules:
+    - if: '$MIRROR_STRATEGY == "selective"'
+      when: manual
