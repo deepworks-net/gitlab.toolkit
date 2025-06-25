@@ -1,0 +1,14 @@
+# Standalone test pipeline - ONLY runs the GitHub auth test
+stages:
+  - test
+
+test-github-auth:
+  stage: test
+  tags:
+    - shell
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - echo "Testing GitHub authentication..."
+    - python3 scripts/test_github_auth.py
+  when: always
