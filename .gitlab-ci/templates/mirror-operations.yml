@@ -35,7 +35,7 @@
     STRATEGY: full-mirror
     TARGET_PLATFORM: github
     SOURCE_REF: ''
-    TARGET_REPO: ''
+    TARGET_REPO: 'https://github.com/deepworks-net/gitlab.toolkit.git'
     INCLUDE_PATTERNS: ''
     EXCLUDE_PATTERNS: ''
     FORCE_PUSH: 'false'
