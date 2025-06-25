@@ -14,3 +14,5 @@ test-minimal:
   variables:
     FCM_MODEL: test.minimal
     FCM_VERSION: 1.0.0
+  rules:
+    - when: never  # DISABLED - Running GitHub auth test instead

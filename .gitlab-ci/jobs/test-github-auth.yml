@@ -9,7 +9,4 @@ test-github-auth:
     - echo "Testing GitHub authentication..."
     - python3 scripts/test_github_auth.py
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: always
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      when: manual
+    - when: always
