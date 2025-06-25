@@ -30,9 +30,9 @@
 .version_operation:
   extends: .version_operation_base
   variables:
-    DEFAULT_VERSION: ''
-    VERSION_PREFIX: ''
-    TAG_PATTERN: ''
+    DEFAULT_VERSION: 'v0.1.0'
+    VERSION_PREFIX: 'v'
+    TAG_PATTERN: 'v*'
   script:
   - python3 scripts/version_operations.py
   artifacts:

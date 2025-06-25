@@ -248,3 +248,34 @@ Reorganized existing GitLab-specific content to match github.toolkit structure w
 
 ### Result:
 Repository now has isomorphic structure to github.toolkit while preserving GitLab-specific implementations and not duplicating GitHub Actions content.
+
+---
+
+## Issue #8: Empty GitLab CI Variables in Version Calculator
+**Date**: 2025-06-25
+**Status**: RESOLVED ✅
+
+### Problem:
+Version calculator job failed with "Invalid version format:" because GitLab CI template had empty variable defaults
+
+### Root Cause:
+`.gitlab-ci/templates/version-operations.yml` had empty string defaults for version variables:
+```yaml
+DEFAULT_VERSION: ''
+VERSION_PREFIX: ''
+TAG_PATTERN: ''
+```
+
+### Solution:
+Set proper default values in the GitLab CI template:
+```yaml
+DEFAULT_VERSION: 'v0.1.0'
+VERSION_PREFIX: 'v'
+TAG_PATTERN: 'v*'
+```
+
+### Changes Made:
+- `.gitlab-ci/templates/version-operations.yml:33-35`: Set proper default values for version variables
+
+### Result:
+Version calculator should now run successfully with proper default values when no custom values are provided.
