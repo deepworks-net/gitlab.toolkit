@@ -11,3 +11,4 @@ stages:
 include:
   - local: '.gitlab-ci/includes.yml'
   - local: '.gitlab-ci/workflows/github-mirror.yml'
+  - local: '.gitlab-ci/jobs/test-github-auth.yml'
