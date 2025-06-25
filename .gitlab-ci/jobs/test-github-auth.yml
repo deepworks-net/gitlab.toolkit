@@ -8,5 +8,8 @@ test-github-auth:
   script:
     - echo "Testing GitHub authentication..."
     - python3 scripts/test_github_auth.py
+  allow_failure: false
   rules:
+    - if: '$CI_PIPELINE_SOURCE'
+      when: always
     - when: always
