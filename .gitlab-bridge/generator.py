@@ -302,7 +302,11 @@ class GitLabBridgeGenerator:
             # Check if requirements are available
             for req in requirements:
                 if req.strip():  # Only add non-empty requirements
-                    before_script.append(f'which {req} || (echo "{req} not found, please install it"; exit 1)')
+                    # Special handling for optional tools
+                    if req == 'github-cli':
+                        before_script.append(f'which gh >/dev/null 2>&1 || echo "Warning: GitHub CLI (gh) not found - some features may not work"')
+                    else:
+                        before_script.append(f'which {req} || (echo "{req} not found, please install it"; exit 1)')
         
         # Git configuration
         if domain == 'git':

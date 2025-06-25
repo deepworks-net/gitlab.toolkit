@@ -59,23 +59,35 @@ class RepositoryMirror:
     
     def create_github_repo_if_needed(self, repo_name: str) -> bool:
         """Create GitHub repository if it doesn't exist"""
+        # Check if GitHub CLI is available
         try:
-            # Check if repo exists
-            self._run_command(['gh', 'repo', 'view', f'{self.github_org}/{repo_name}'])
-            print(f"📦 Repository {repo_name} already exists")
-            return False
+            self._run_command(['which', 'gh'], capture=True)
+            gh_available = True
         except subprocess.CalledProcessError:
-            # Repository doesn't exist, create it
-            print(f"📦 Creating GitHub repository: {repo_name}")
-            
-            description = f"GitLab Toolkit - {self.strategy} mirror"
-            self._run_command([
-                'gh', 'repo', 'create', f'{self.github_org}/{repo_name}',
-                '--description', description,
-                '--public',
-                '--clone=false'
-            ])
-            return True
+            gh_available = False
+            print("⚠️ GitHub CLI not available - assuming repository exists or will be created manually")
+        
+        if gh_available:
+            try:
+                # Check if repo exists
+                self._run_command(['gh', 'repo', 'view', f'{self.github_org}/{repo_name}'])
+                print(f"📦 Repository {repo_name} already exists")
+                return False
+            except subprocess.CalledProcessError:
+                # Repository doesn't exist, create it
+                print(f"📦 Creating GitHub repository: {repo_name}")
+                
+                description = f"GitLab Toolkit - {self.strategy} mirror"
+                self._run_command([
+                    'gh', 'repo', 'create', f'{self.github_org}/{repo_name}',
+                    '--description', description,
+                    '--public',
+                    '--clone=false'
+                ])
+                return True
+        else:
+            print(f"📦 Skipping repository creation check - assuming {repo_name} exists")
+            return False
     
     def mirror_full_repository(self) -> bool:
         """Mirror complete repository with history"""
@@ -275,6 +287,14 @@ include:
     def run(self):
         """Execute the mirroring operation"""
         print(f"🚀 Starting repository mirror with strategy: {self.strategy}")
+        
+        # Validate required environment variables
+        if not self.target_repo:
+            print("❌ TARGET_REPO environment variable is required")
+            sys.exit(1)
+        
+        if not self.github_token:
+            print("⚠️ GITHUB_TOKEN not provided - some operations may fail")
         
         # Setup
         self.setup_git_config()

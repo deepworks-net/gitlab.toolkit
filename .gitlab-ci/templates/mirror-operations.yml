@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT
 # Domain: mirror
-# Generated: 2025-06-25T04:58:55.398783Z
+# Generated: 2025-06-25T05:09:10.235263Z
 
 .mirror_operation_base:
   stage: build
@@ -12,7 +12,8 @@
   before_script:
   - which python3 || (echo "Python3 not found"; exit 1)
   - which git || (echo "git not found, please install it"; exit 1)
-  - which github-cli || (echo "github-cli not found, please install it"; exit 1)
+  - 'which gh >/dev/null 2>&1 || echo "Warning: GitHub CLI (gh) not found - some features
+    may not work"'
   - '# Install Python dependencies if needed'
   - if [ -f scripts/requirements.txt ]; then
   - '  if command -v pip3 >/dev/null 2>&1; then'
