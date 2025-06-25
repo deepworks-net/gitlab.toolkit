@@ -1,0 +1,41 @@
+# GENERATED FILE - DO NOT EDIT
+# Domain: version
+# Generated: 2025-06-25T10:25:34.870990Z
+
+.version_operation_base:
+  stage: build
+  tags:
+  - shell
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: '0'
+  before_script:
+  - which python3 || (echo "Python3 not found"; exit 1)
+  - which git || (echo "git not found, please install it"; exit 1)
+  - '# Install Python dependencies if needed'
+  - if [ -f scripts/requirements.txt ]; then
+  - '  if command -v pip3 >/dev/null 2>&1; then'
+  - '    pip3 install --user -r scripts/requirements.txt || echo "pip3 install failed,
+    continuing anyway"'
+  - '  elif command -v pip >/dev/null 2>&1; then'
+  - '    pip install --user -r scripts/requirements.txt || echo "pip install failed,
+    continuing anyway"'
+  - '  else'
+  - '    echo "No pip/pip3 found - assuming dependencies are pre-installed"'
+  - '  fi'
+  - else
+  - '  echo "No requirements.txt found"'
+  - fi
+  - export PATH="$HOME/.local/bin:$PATH"
+.version_operation:
+  extends: .version_operation_base
+  variables:
+    DEFAULT_VERSION: ''
+    VERSION_PREFIX: ''
+    TAG_PATTERN: ''
+  script:
+  - python3 scripts/version_operations.py
+  artifacts:
+    reports:
+      dotenv: operation_outputs.env
+    expire_in: 1 hour

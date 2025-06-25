@@ -1,0 +1,8 @@
+{
+  "source_fcm": "github.toolkit/axioms/version/version-calculator.fcm",
+  "model": "version.calculator",
+  "version": "1.0.0",
+  "generated_at": "2025-06-25T10:25:34.861617Z",
+  "generator_version": "gitlab-bridge-1.0.0",
+  "checksum": "5e3f5a7febdec4f87937b542466ac1504d9822c6803bd3ce0b700a39edb5b58f"
+}

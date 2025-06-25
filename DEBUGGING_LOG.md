@@ -177,3 +177,41 @@ Removed debug logging code from `scripts/mirror_operations.py:391-403` since the
 
 ### Result:
 Mirror script is back to clean production state without debug output.
+
+---
+
+## Issue #6: Implement GitLab Version Calculator from FCM
+**Date**: 2025-06-25
+**Status**: COMPLETED ✅
+
+### Problem:
+Need to implement GitLab equivalent of GitHub Actions version_calculator using FCM methodology
+
+### Solution:
+Created FCM source and used GitLab bridge generator to create GitLab CI implementation
+
+### Implementation Steps:
+1. Created FCM definition: `github.toolkit/axioms/version/version-calculator.fcm`
+2. Used GitLab bridge generator: `python3 .gitlab-bridge/generator.py`
+3. Generated GitLab CI files:
+   - `.gitlab-ci/jobs/calculator.yml` - Job definition
+   - `.gitlab-ci/templates/version-operations.yml` - Template with parameters
+4. Created runtime script: `scripts/version_operations.py`
+5. Updated master include file: `.gitlab-ci/includes.yml`
+
+### Files Created:
+- **FCM Source**: `github.toolkit/axioms/version/version-calculator.fcm`
+- **GitLab Job**: `.gitlab-ci/jobs/calculator.yml`
+- **GitLab Template**: `.gitlab-ci/templates/version-operations.yml`
+- **Runtime Script**: `scripts/version_operations.py`
+- **Bridge Sync**: `.gitlab-ci/jobs/calculator.bridge-sync`
+
+### Key Features:
+- Calculates semantic versions from git tags and commit count
+- Supports configurable version prefix and tag patterns
+- Outputs current_version, next_version, and commit_count
+- Compatible with GitLab CI environment variables
+- Uses FCM Bridge Architecture for maintainability
+
+### Test Results:
+Local testing successful - script runs and produces expected outputs to `operation_outputs.env`
