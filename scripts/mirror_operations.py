@@ -388,20 +388,6 @@ include:
         """Execute the mirroring operation"""
         print(f"🚀 Starting repository mirror with strategy: {self.strategy}")
         
-        # DEBUG: Print all environment variables for troubleshooting
-        print("🔍 DEBUG: Environment variables:")
-        env_vars = ['TARGET_REPO', 'GITHUB_ORG', 'GITLAB_ACCESS', 'GITHUB_TOKEN', 'CI_COMMIT_REF_NAME', 'CI_COMMIT_SHA']
-        for var in env_vars:
-            value = os.environ.get(var, 'NOT_SET')
-            if 'TOKEN' in var or 'ACCESS' in var:
-                value = '[MASKED]' if value != 'NOT_SET' else 'NOT_SET'
-            print(f"   {var}: {value}")
-        
-        print("🔍 DEBUG: All CI_ variables:")
-        for key, value in sorted(os.environ.items()):
-            if key.startswith('CI_'):
-                print(f"   {key}: {value}")
-        
         # Validate required environment variables
         if not self.target_repo:
             print("❌ TARGET_REPO environment variable is required")
