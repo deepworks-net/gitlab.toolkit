@@ -14,5 +14,3 @@ mirror-repository-mirror:
   variables:
     FCM_MODEL: mirror.repository-mirror
     FCM_VERSION: 1.0.0
-  rules:
-    - when: never  # DISABLED - Fix authentication first
