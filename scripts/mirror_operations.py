@@ -19,7 +19,7 @@ class RepositoryMirror:
     def __init__(self):
         self.strategy = os.environ.get('STRATEGY', 'source-only')
         self.target_platform = os.environ.get('TARGET_PLATFORM', 'github')
-        self.target_repo = self._extract_repo_name(os.environ.get('TARGET_REPO', ''))
+        self.target_repo = os.environ.get('TARGET_REPO', '')
         self.github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
         self.github_token = os.environ.get('GITHUB_TOKEN', '')
         self.source_ref = os.environ.get('SOURCE_REF', 'main')
@@ -122,14 +122,22 @@ class RepositoryMirror:
         repo_url = os.environ.get('CI_REPOSITORY_URL', '')
         
         # Build GitHub URL with authentication
-        if self.github_token:
-            # Use token only format (proven to work)
-            target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+        # If TARGET_REPO is already a full URL, use it directly
+        if self.target_repo.startswith('http'):
+            if self.github_token:
+                # Insert token into existing URL
+                target_url = self.target_repo.replace('https://', f'https://{self.github_token}@')
+            else:
+                target_url = self.target_repo
         else:
-            target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
+            # Build URL from parts
+            if self.github_token:
+                target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+            else:
+                target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
         
         print(f"Source: {repo_url}")
-        print(f"Target: https://github.com/{self.github_org}/{self.target_repo}.git")
+        print(f"Target: {target_url.replace(self.github_token, '[MASKED]')}")
         
         # Clone as mirror
         self._run_command(['git', 'clone', '--mirror', repo_url, 'repo-mirror'])
@@ -301,10 +309,19 @@ include:
             self._run_command(['git', 'commit', '-m', commit_msg], cwd=target_dir)
             
             # Add remote and push
-            if self.github_token:
-                target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+            # If TARGET_REPO is already a full URL, use it directly
+            if self.target_repo.startswith('http'):
+                if self.github_token:
+                    # Insert token into existing URL
+                    target_url = self.target_repo.replace('https://', f'https://{self.github_token}@')
+                else:
+                    target_url = self.target_repo
             else:
-                target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
+                # Build URL from parts
+                if self.github_token:
+                    target_url = f"https://{self.github_token}@github.com/{self.github_org}/{self.target_repo}.git"
+                else:
+                    target_url = f"https://github.com/{self.github_org}/{self.target_repo}.git"
             self._run_command(['git', 'remote', 'add', 'origin', target_url], cwd=target_dir)
             self._run_command(['git', 'branch', '-M', 'main'], cwd=target_dir)
             
