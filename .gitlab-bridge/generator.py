@@ -133,9 +133,11 @@ class FCMParser:
 class GitLabBridgeGenerator:
     """Generate GitLab CI/CD templates from FCM definitions"""
     
-    def __init__(self, fcm_base_path: str = "github.toolkit/axioms", 
+    def __init__(self, fcm_base_paths: list = None, 
                  output_base_path: str = ".gitlab-ci"):
-        self.fcm_base_path = Path(fcm_base_path)
+        if fcm_base_paths is None:
+            fcm_base_paths = ["github.toolkit/axioms", "axioms"]
+        self.fcm_base_paths = [Path(p) for p in fcm_base_paths]
         self.output_base_path = Path(output_base_path)
         self.generated_files = []
         
@@ -145,8 +147,11 @@ class GitLabBridgeGenerator:
         (self.output_base_path / "jobs").mkdir(parents=True, exist_ok=True)
         (self.output_base_path / "templates").mkdir(parents=True, exist_ok=True)
         
-        # Find all FCM files
-        fcm_files = list(self.fcm_base_path.rglob("*.fcm"))
+        # Find all FCM files from all base paths
+        fcm_files = []
+        for base_path in self.fcm_base_paths:
+            if base_path.exists():
+                fcm_files.extend(list(base_path.rglob("*.fcm")))
         
         print(f"Found {len(fcm_files)} FCM files to process")
         

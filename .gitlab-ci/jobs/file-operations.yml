@@ -1,0 +1,81 @@
+# GENERATED FILE - DO NOT EDIT
+# Source: axioms/system/file-operations.fcm
+# Model: system.file-operations v1.0.0
+# Generated: 2025-06-25T03:59:10.562558Z
+
+# To modify this job:
+# 1. Edit the source FCM
+# 2. Run: python .gitlab-bridge/generator.py
+# 3. Commit both FCM and generated files
+include:
+- local: .gitlab-ci/templates/system-operations.yml
+system-file-operations-create:
+  extends: .system_operation
+  variables:
+    OPERATION: create
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "create"
+system-file-operations-read:
+  extends: .system_operation
+  variables:
+    OPERATION: read
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "read"
+system-file-operations-update:
+  extends: .system_operation
+  variables:
+    OPERATION: update
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "update"
+system-file-operations-delete:
+  extends: .system_operation
+  variables:
+    OPERATION: delete
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "delete"
+system-file-operations-copy:
+  extends: .system_operation
+  variables:
+    OPERATION: copy
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "copy"
+system-file-operations-move:
+  extends: .system_operation
+  variables:
+    OPERATION: move
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "move"
+system-file-operations-search:
+  extends: .system_operation
+  variables:
+    OPERATION: search
+    FCM_MODEL: system.file-operations
+    FCM_VERSION: 1.0.0
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    when: manual
+  - if: $CI_COMMIT_BRANCH == $DEFAULT_BRANCH && $GIT_OPERATION == "search"

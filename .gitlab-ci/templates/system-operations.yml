@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT
+# Domain: system
+# Generated: 2025-06-25T03:59:10.621121Z
+
+.system_operation_base:
+  image: python:3.9-slim
+  stage: execute
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: '0'
+  before_script:
+  - 'apt-get update && apt-get install -y '
+  - pip install -r scripts/requirements.txt || true
+.system_operation:
+  extends: .system_operation_base
+  variables:
+    ACTION: create
+    FILE_PATH: ''
+    CONTENT: ''
+    DESTINATION: ''
+    PATTERN: ''
+    ENCODING: utf-8
+    CREATE_DIRS: 'false'
+    OVERWRITE: 'false'
+  script:
+  - python scripts/system_operations.py
+  artifacts:
+    reports:
+      dotenv: operation_outputs.env
+    expire_in: 1 hour
