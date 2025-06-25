@@ -36,6 +36,7 @@
     TARGET_PLATFORM: github
     SOURCE_REF: ''
     TARGET_REPO: ''
+    GITHUB_ORG: ''
     INCLUDE_PATTERNS: ''
     EXCLUDE_PATTERNS: ''
     FORCE_PUSH: 'false'

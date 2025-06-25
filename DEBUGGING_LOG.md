@@ -91,3 +91,39 @@ Script logic expects TARGET_REPO to be just the repository name, not a full URL.
 
 ### Solution:
 Reverted TARGET_REPO to empty string to use GitLab CI/CD variable set in repository settings
+
+### Issue #3c: GitLab CI/CD Variable Not Found
+**Date**: 2025-06-25  
+**Status**: IN PROGRESS 🔄
+
+### Problem:
+Even with TARGET_REPO empty in template, GitLab CI still shows `Repository: ` (empty)
+
+### Root Cause Options:
+1. TARGET_REPO CI/CD variable not set in GitLab repository settings
+2. Variable set with different name 
+3. Variable has wrong scope/protection settings
+4. Branch-specific variable restrictions (unlikely but possible)
+
+### Need to check:
+- GitLab repository Settings > CI/CD > Variables
+- Verify TARGET_REPO variable exists and value
+- Check if variable is protected/masked and affects availability
+
+## Issue #4: Hardcoded GitHub Organization
+**Date**: 2025-06-25
+**Status**: RESOLVED ✅
+
+### Problem:
+`GITHUB_ORG` is hardcoded to "deepworks-net" in scripts, needs to be configurable
+
+### Solution:
+Added `GITHUB_ORG: ''` to GitLab CI template variables so it can be set via GitLab CI/CD variables
+
+### Changes Made:
+- `.gitlab-ci/templates/mirror-operations.yml:39`: Added `GITHUB_ORG: ''` variable
+
+### Required CI/CD Variables:
+Both of these now need to be set in GitLab repository Settings > CI/CD > Variables:
+- `TARGET_REPO`: GitHub repository URL or name
+- `GITHUB_ORG`: GitHub organization name (e.g., "deepworks-net")
