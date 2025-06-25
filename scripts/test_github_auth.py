@@ -74,6 +74,60 @@ def test_github_auth():
     print("\n❌ All authentication formats failed!")
     return False
 
+def test_git_clone():
+    """Test actual git clone with the working authentication"""
+    print("\n=== Testing Git Clone ===")
+    
+    github_token = os.environ.get('GITHUB_TOKEN', '')
+    github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
+    target_repo = os.environ.get('TARGET_REPO', 'gitlab.toolkit')
+    
+    # Extract repo name if full URL
+    if target_repo.startswith('http'):
+        repo_name = target_repo.rstrip('/').split('/')[-1]
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]
+        target_repo = repo_name
+    
+    # Use the format that worked in ls-remote
+    clone_url = f'https://{github_token}@github.com/{github_org}/{target_repo}.git'
+    
+    print("🔍 Testing git clone...")
+    print(f"   Target: https://[MASKED]@github.com/{github_org}/{target_repo}.git")
+    
+    try:
+        # Clean up any existing test directory
+        subprocess.run(['rm', '-rf', 'test-clone'], capture_output=True)
+        
+        # Try to clone
+        result = subprocess.run(
+            ['git', 'clone', clone_url, 'test-clone'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print("   ✅ Clone successful!")
+            # Clean up
+            subprocess.run(['rm', '-rf', 'test-clone'], capture_output=True)
+            return True
+        else:
+            print(f"   ❌ Clone failed - Exit code: {result.returncode}")
+            error = result.stderr.replace(github_token, '[MASKED]')
+            print(f"   Error: {error}")
+            return False
+            
+    except Exception as e:
+        print(f"   ❌ ERROR - {type(e).__name__}: {e}")
+        return False
+
 if __name__ == "__main__":
-    success = test_github_auth()
-    sys.exit(0 if success else 1)
+    # First test authentication
+    auth_success = test_github_auth()
+    
+    if auth_success:
+        # If auth works, test clone
+        clone_success = test_git_clone()
+        sys.exit(0 if clone_success else 1)
+    else:
+        sys.exit(1)
