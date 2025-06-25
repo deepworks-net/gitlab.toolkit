@@ -1,0 +1,79 @@
+# GitLab Toolkit CI/CD Configuration
+# Mirrors the functionality of github.toolkit for GitLab
+
+stages:
+  - validate
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  # Default variables that can be overridden
+  DEFAULT_BRANCH: "main"
+  DEVELOP_BRANCH: "develop"
+  DOCKER_DRIVER: overlay2
+  # Python image for scripts
+  PYTHON_IMAGE: "python:3.9-slim"
+  # Git configuration
+  GIT_DEPTH: 0  # Full clone for version calculations
+
+# Include templates
+include:
+  # Core operation templates
+  - local: '.gitlab-ci/templates/git-operations.yml'
+  - local: '.gitlab-ci/templates/version-management.yml'
+  - local: '.gitlab-ci/templates/release-management.yml'
+  
+  # Job definitions
+  - local: '.gitlab-ci/jobs/branch-operations.yml'
+  - local: '.gitlab-ci/jobs/tag-operations.yml'
+  - local: '.gitlab-ci/jobs/commit-operations.yml'
+  - local: '.gitlab-ci/jobs/version-calculator.yml'
+  - local: '.gitlab-ci/jobs/version-updater.yml'
+  - local: '.gitlab-ci/jobs/release-operations.yml'
+
+# Default before_script for git operations
+.git_setup:
+  before_script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global init.defaultBranch main
+
+# Validation stage - equivalent to GitHub Actions checks
+validate:
+  stage: validate
+  image: $PYTHON_IMAGE
+  script:
+    - echo "Validating repository structure..."
+    - |
+      if [ -f "requirements.txt" ]; then
+        pip install -r requirements.txt
+      fi
+    - echo "Validation complete"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+
+# Documentation deployment - equivalent to mkdocs-gh-pages workflow
+pages:
+  stage: deploy
+  image: python:3.9-slim
+  before_script:
+    - pip install mkdocs mkdocs-material
+  script:
+    - |
+      if [ -f "mkdocs.yml" ]; then
+        mkdocs build --site-dir public
+      else
+        echo "No mkdocs.yml found, skipping documentation build"
+        mkdir -p public
+        echo "GitLab Toolkit" > public/index.html
+      fi
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEFAULT_BRANCH'
