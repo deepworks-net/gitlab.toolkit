@@ -121,6 +121,85 @@ def test_git_clone():
         print(f"   ❌ ERROR - {type(e).__name__}: {e}")
         return False
 
+def test_mirror_push():
+    """Test mirror clone and push like the actual mirror script"""
+    print("\n=== Testing Mirror Push ===")
+    
+    github_token = os.environ.get('GITHUB_TOKEN', '')
+    github_org = os.environ.get('GITHUB_ORG', 'deepworks-net')
+    target_repo = os.environ.get('TARGET_REPO', 'gitlab.toolkit')
+    repo_url = os.environ.get('CI_REPOSITORY_URL', '')
+    
+    # Extract repo name if full URL
+    if target_repo.startswith('http'):
+        repo_name = target_repo.rstrip('/').split('/')[-1]
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]
+        target_repo = repo_name
+    
+    print("🔍 Testing mirror clone and push...")
+    print(f"   Source: {repo_url}")
+    print(f"   Target: https://github.com/{github_org}/{target_repo}.git")
+    
+    try:
+        # Clean up
+        subprocess.run(['rm', '-rf', 'test-mirror'], capture_output=True)
+        
+        # Clone as mirror
+        print("   📥 Cloning as mirror...")
+        result = subprocess.run(
+            ['git', 'clone', '--mirror', repo_url, 'test-mirror'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print(f"   ❌ Mirror clone failed - Exit code: {result.returncode}")
+            print(f"   Error: {result.stderr}")
+            return False
+            
+        # Add GitHub remote
+        github_url = f'https://{github_token}@github.com/{github_org}/{target_repo}.git'
+        print("   🔗 Adding GitHub remote...")
+        result = subprocess.run(
+            ['git', 'remote', 'add', 'github', github_url],
+            cwd='test-mirror',
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print(f"   ❌ Add remote failed - Exit code: {result.returncode}")
+            print(f"   Error: {result.stderr}")
+            return False
+            
+        # Try push with --dry-run first
+        print("   🧪 Testing push (dry run)...")
+        result = subprocess.run(
+            ['git', 'push', 'github', '--mirror', '--dry-run'],
+            cwd='test-mirror',
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print("   ✅ Mirror push test successful (dry run)!")
+            # Clean up
+            subprocess.run(['rm', '-rf', 'test-mirror'], capture_output=True)
+            return True
+        else:
+            print(f"   ❌ Mirror push failed - Exit code: {result.returncode}")
+            error = result.stderr.replace(github_token, '[MASKED]')
+            print(f"   Error: {error}")
+            # Clean up
+            subprocess.run(['rm', '-rf', 'test-mirror'], capture_output=True)
+            return False
+            
+    except Exception as e:
+        print(f"   ❌ ERROR - {type(e).__name__}: {e}")
+        subprocess.run(['rm', '-rf', 'test-mirror'], capture_output=True)
+        return False
+
 if __name__ == "__main__":
     # First test authentication
     auth_success = test_github_auth()
@@ -128,6 +207,12 @@ if __name__ == "__main__":
     if auth_success:
         # If auth works, test clone
         clone_success = test_git_clone()
-        sys.exit(0 if clone_success else 1)
+        
+        if clone_success:
+            # If clone works, test mirror push
+            mirror_success = test_mirror_push()
+            sys.exit(0 if mirror_success else 1)
+        else:
+            sys.exit(1)
     else:
         sys.exit(1)
