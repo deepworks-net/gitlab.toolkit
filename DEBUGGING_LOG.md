@@ -127,3 +127,21 @@ Added `GITHUB_ORG: ''` to GitLab CI template variables so it can be set via GitL
 Both of these now need to be set in GitLab repository Settings > CI/CD > Variables:
 - `TARGET_REPO`: GitHub repository URL or name
 - `GITHUB_ORG`: GitHub organization name (e.g., "deepworks-net")
+
+## Issue #5: Staging Branch Missing TARGET_REPO (Main Branch Works)
+**Date**: 2025-06-25
+**Status**: DEBUGGING 🔍
+
+### Problem:
+- Main branch: Mirror works correctly
+- Staging branch: Fails with missing TARGET_REPO variable
+- Same GitLab CI/CD variables should be available to all branches
+
+### Debug Actions:
+Added extensive debug logging to `scripts/mirror_operations.py:391-403` to print:
+- Key environment variables (TARGET_REPO, GITHUB_ORG, tokens, etc.)
+- All CI_ prefixed variables
+- This will help identify what's different between main and staging branch runs
+
+### Next Steps:
+Run staging branch and compare debug output with main branch to identify the difference
