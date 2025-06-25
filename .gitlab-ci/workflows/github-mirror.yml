@@ -165,9 +165,7 @@ mirror-artifacts-to-github:
       echo "✅ Artifacts mirror completed"
       echo "🔗 Artifacts available at: https://github.com/$GITHUB_ORG/$GITHUB_REPO_NAME"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $MIRROR_STRATEGY == "artifacts-only"'
-    - when: manual
-      allow_failure: false
+    - when: never  # DISABLED - incompatible with shell runner
 
 # Selective mirror with custom patterns
 mirror-selective-to-github:
@@ -175,6 +173,8 @@ mirror-selective-to-github:
   image: alpine/git:latest
   tags:
     - shell
+  rules:
+    - when: never  # DISABLED - incompatible with shell runner
   variables:
     MIRROR_STRATEGY: "selective"
     INCLUDE_PATTERNS: "README.md,LICENSE,CHANGELOG.md,.gitlab-ci/,scripts/,actions/"
