@@ -149,8 +149,43 @@ class RepositoryMirror:
         self._run_command(['git', 'remote', 'add', 'github', target_url], cwd='repo-mirror')
         
         print("🔄 Pushing full mirror to existing GitHub repository...")
-        # Use --force to overwrite any existing content in the GitHub repo
-        self._run_command(['git', 'push', 'github', '--mirror', '--force'], cwd='repo-mirror')
+        
+        # Debug: Check git version and config
+        self._run_command(['git', '--version'], cwd='repo-mirror')
+        self._run_command(['git', 'config', '--list', '--local'], cwd='repo-mirror')
+        self._run_command(['git', 'remote', '-v'], cwd='repo-mirror')
+        
+        # Try different push approaches
+        print("🔍 Testing push with verbose output...")
+        try:
+            # First try with GIT_TRACE to see what's happening
+            env = os.environ.copy()
+            env['GIT_TRACE'] = '1'
+            env['GIT_CURL_VERBOSE'] = '1'
+            
+            result = subprocess.run(
+                ['git', 'push', 'github', '--mirror', '--force', '-v'],
+                cwd='repo-mirror',
+                capture_output=True,
+                text=True,
+                env=env
+            )
+            
+            if result.returncode != 0:
+                print(f"❌ Push failed with exit code {result.returncode}")
+                # Mask the token in output
+                stderr = result.stderr.replace(self.github_token, '[MASKED]') if self.github_token else result.stderr
+                stdout = result.stdout.replace(self.github_token, '[MASKED]') if self.github_token else result.stdout
+                print(f"STDOUT:\n{stdout}")
+                print(f"STDERR:\n{stderr}")
+                raise subprocess.CalledProcessError(result.returncode, result.args)
+            else:
+                print("✅ Push successful!")
+                
+        except subprocess.CalledProcessError:
+            # Try alternative: push with explicit URL
+            print("\n🔄 Trying alternative: push with explicit URL...")
+            self._run_command(['git', 'push', target_url, '--mirror', '--force'], cwd='repo-mirror')
         
         self.outputs['mirror_status'] = 'success'
         self.outputs['target_url'] = f"https://github.com/{self.github_org}/{self.target_repo}"
@@ -359,7 +394,16 @@ include:
         
         # Setup
         self.setup_git_config()
-        self.create_github_repo_if_needed(self.target_repo)
+        
+        # Extract just the repo name for GitHub operations
+        if self.target_repo.startswith('http'):
+            repo_name = self.target_repo.rstrip('/').split('/')[-1]
+            if repo_name.endswith('.git'):
+                repo_name = repo_name[:-4]
+        else:
+            repo_name = self.target_repo
+            
+        self.create_github_repo_if_needed(repo_name)
         
         # Execute strategy
         strategies = {
