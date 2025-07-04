@@ -16,8 +16,22 @@ class GitOperations:
     
     def __init__(self):
         self.operation = os.environ.get('OPERATION', '').lower()
+        self.sub_operation = os.environ.get('SUB_OPERATION', '').lower()
+        
+        # Branch operations
         self.branch_name = os.environ.get('BRANCH_NAME', '')
         self.target_branch = os.environ.get('TARGET_BRANCH', '')
+        
+        # Commit operations
+        self.commit_message = os.environ.get('COMMIT_MESSAGE', '')
+        self.commit_sha = os.environ.get('COMMIT_SHA', '')
+        self.files_to_add = os.environ.get('FILES_TO_ADD', '')
+        
+        # Tag operations
+        self.tag_name = os.environ.get('TAG_NAME', '')
+        self.tag_message = os.environ.get('TAG_MESSAGE', '')
+        
+        # Common flags
         self.remote = os.environ.get('REMOTE', 'false').lower() == 'true'
         self.force = os.environ.get('FORCE', 'false').lower() == 'true'
         self.include_remote = os.environ.get('INCLUDE_REMOTE', 'false').lower() == 'true'
@@ -29,11 +43,23 @@ class GitOperations:
     def run(self):
         """Execute the requested git operation"""
         operations = {
+            # Branch operations
             'create': self.create_branch,
             'delete': self.delete_branch,
             'list': self.list_branches,
             'checkout': self.checkout_branch,
-            'merge': self.merge_branch
+            'merge': self.merge_branch,
+            
+            # Commit operations
+            'commit': self.commit_changes,
+            'amend': self.amend_commit,
+            'revert': self.revert_commit,
+            
+            # Tag operations
+            'create_tag': self.create_tag,
+            'delete_tag': self.delete_tag,
+            'list_tags': self.list_tags,
+            'push_tag': self.push_tag
         }
         
         if self.operation not in operations:
@@ -55,11 +81,16 @@ class GitOperations:
         
         base_branch = self.target_branch or 'main'
         
-        # Fetch latest from remote
-        self._run_git(['fetch', 'origin'])
+        # Try to fetch from remote if it exists
+        try:
+            self._run_git(['fetch', 'origin'])
+            branch_ref = f'origin/{base_branch}'
+        except subprocess.CalledProcessError:
+            # No remote or fetch failed, use local branch
+            branch_ref = base_branch
         
         # Create branch from base
-        self._run_git(['checkout', '-b', self.branch_name, f'origin/{base_branch}'])
+        self._run_git(['checkout', '-b', self.branch_name, branch_ref])
         
         # Push to remote if requested
         if self.remote:
@@ -148,6 +179,140 @@ class GitOperations:
         self._run_git(merge_args)
         
         self.outputs['merge_result'] = f"Merged {self.branch_name} into {target}"
+        self.outputs['operation_status'] = 'success'
+    
+    # Commit Operations
+    def commit_changes(self):
+        """Create a commit with staged changes"""
+        if not self.commit_message:
+            raise ValueError("COMMIT_MESSAGE is required for commit operation")
+        
+        # Add files if specified
+        if self.files_to_add:
+            files = [f.strip() for f in self.files_to_add.split(',')]
+            for file in files:
+                self._run_git(['add', file])
+        
+        # Create commit
+        self._run_git(['commit', '-m', self.commit_message])
+        
+        # Get commit SHA
+        commit_sha = self._run_git(['rev-parse', 'HEAD'], capture=True).strip()
+        
+        self.outputs['commit_sha'] = commit_sha
+        self.outputs['commit_message'] = self.commit_message
+        self.outputs['operation_status'] = 'success'
+    
+    def amend_commit(self):
+        """Amend the last commit"""
+        amend_args = ['commit', '--amend']
+        
+        if self.commit_message:
+            amend_args.extend(['-m', self.commit_message])
+        else:
+            amend_args.append('--no-edit')
+        
+        # Add files if specified
+        if self.files_to_add:
+            files = [f.strip() for f in self.files_to_add.split(',')]
+            for file in files:
+                self._run_git(['add', file])
+        
+        self._run_git(amend_args)
+        
+        # Get updated commit SHA
+        commit_sha = self._run_git(['rev-parse', 'HEAD'], capture=True).strip()
+        
+        self.outputs['commit_sha'] = commit_sha
+        self.outputs['operation_status'] = 'success'
+    
+    def revert_commit(self):
+        """Revert a commit"""
+        if not self.commit_sha:
+            raise ValueError("COMMIT_SHA is required for revert operation")
+        
+        revert_args = ['revert', self.commit_sha]
+        if not self.commit_message:
+            revert_args.append('--no-edit')
+        else:
+            revert_args.extend(['-m', self.commit_message])
+        
+        self._run_git(revert_args)
+        
+        # Get revert commit SHA
+        commit_sha = self._run_git(['rev-parse', 'HEAD'], capture=True).strip()
+        
+        self.outputs['revert_commit_sha'] = commit_sha
+        self.outputs['reverted_commit'] = self.commit_sha
+        self.outputs['operation_status'] = 'success'
+    
+    # Tag Operations
+    def create_tag(self):
+        """Create a tag"""
+        if not self.tag_name:
+            raise ValueError("TAG_NAME is required for create_tag operation")
+        
+        tag_args = ['tag']
+        
+        if self.tag_message:
+            tag_args.extend(['-a', '-m', self.tag_message])
+        
+        tag_args.append(self.tag_name)
+        
+        if self.commit_sha:
+            tag_args.append(self.commit_sha)
+        
+        self._run_git(tag_args)
+        
+        self.outputs['tag_created'] = self.tag_name
+        self.outputs['operation_status'] = 'success'
+    
+    def delete_tag(self):
+        """Delete a tag"""
+        if not self.tag_name:
+            raise ValueError("TAG_NAME is required for delete_tag operation")
+        
+        # Delete local tag
+        self._run_git(['tag', '-d', self.tag_name])
+        
+        # Delete remote tag if requested
+        if self.remote:
+            self._run_git(['push', 'origin', '--delete', self.tag_name])
+        
+        self.outputs['tag_deleted'] = self.tag_name
+        self.outputs['operation_status'] = 'success'
+    
+    def list_tags(self):
+        """List tags"""
+        list_args = ['tag']
+        
+        if self.pattern:
+            list_args.extend(['-l', self.pattern])
+        
+        result = self._run_git(list_args, capture=True)
+        
+        # Parse tag names
+        tags = []
+        for line in result.strip().split('\n'):
+            if line.strip():
+                tags.append(line.strip())
+        
+        self.outputs['tags_list'] = ','.join(tags)
+        self.outputs['tags_count'] = str(len(tags))
+        self.outputs['operation_status'] = 'success'
+    
+    def push_tag(self):
+        """Push tag to remote"""
+        if not self.tag_name:
+            raise ValueError("TAG_NAME is required for push_tag operation")
+        
+        push_args = ['push', 'origin', self.tag_name]
+        if self.force:
+            push_args.insert(2, '--force')
+        
+        self._run_git(push_args)
+        
+        self.outputs['tag_pushed'] = self.tag_name
         self.outputs['operation_status'] = 'success'
     
     def _run_git(self, args, capture=False):
